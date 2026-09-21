@@ -43,6 +43,7 @@ import net.skinsrestorer.shared.connections.RecommendationsState;
 import net.skinsrestorer.shared.connections.ServiceCheckerService;
 import net.skinsrestorer.shared.exception.InitializeException;
 import net.skinsrestorer.shared.floodgate.FloodgateUtil;
+import net.skinsrestorer.shared.info.Platform;
 import net.skinsrestorer.shared.log.SRChatColor;
 import net.skinsrestorer.shared.log.SRLogger;
 import net.skinsrestorer.shared.storage.CacheStorageImpl;
@@ -393,6 +394,9 @@ public class SRPlugin {
     }
 
     private void runJavaCheck() {
+        if (adapter.getPlatform() == Platform.FORGE) {
+            return;
+        }
         try {
             int version = SRHelpers.getJavaVersion();
             if (version < 17) {

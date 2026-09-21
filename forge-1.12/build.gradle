@@ -27,6 +27,11 @@ minecraft {
     // RFG runServer/runObfServer use this launcher, not java.toolchain (which is 25 for compileJava/test).
     jvmLanguageVersion = JavaLanguageVersion.of(8)
     // Forge version is RFG's built-in 1.12.2 default (14.23.5.2847); getForgeVersion() is not settable.
+    injectedTags.put('VERSION', project.version)
+}
+
+tasks.named('injectTags').configure {
+    outputClassName.set('net.skinsrestorer.forge112.Tags')
 }
 
 repositories {
