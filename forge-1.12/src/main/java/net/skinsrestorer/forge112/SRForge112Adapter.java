@@ -176,7 +176,7 @@ public class SRForge112Adapter implements SRServerAdapter {
                     String.valueOf(mod.getVersion()),
                     "N/A",
                     Map.of(),
-                    List.of(String.valueOf(mod.getMetadata() != null ? mod.getMetadata().getAuthorList() : ""))
+                    mod.getMetadata() != null ? mod.getMetadata().authorList : List.of("N/A")
             ));
         }
         return list;

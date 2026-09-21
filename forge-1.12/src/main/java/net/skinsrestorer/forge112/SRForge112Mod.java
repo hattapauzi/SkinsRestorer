@@ -32,7 +32,7 @@ import java.util.List;
 @Mod(
         modid = SRForge112Mod.MOD_ID,
         name = "SkinsRestorer",
-        version = "15.12.7-SNAPSHOT",
+        version = Tags.VERSION,
         acceptableRemoteVersions = "*",
         serverSideOnly = true,
         acceptableSaveVersions = "*"

@@ -88,7 +88,11 @@ public class SkinApplierForge112 implements SkinApplierAccess<EntityPlayerMP> {
         if (settings.getProperty(ServerConfig.DISMOUNT_PLAYER_ON_UPDATE) && vehicle != null) {
             player.dismountRidingEntity();
             if (settings.getProperty(ServerConfig.REMOUNT_PLAYER_ON_UPDATE)) {
-                adapter.server().addScheduledTask(() -> player.startRiding(vehicle, true));
+                adapter.server().addScheduledTask(() -> {
+                    if (vehicle.isEntityAlive() && !player.hasDisconnected()) {
+                        player.startRiding(vehicle, true);
+                    }
+                });
             }
         }
         if (settings.getProperty(ServerConfig.DISMOUNT_PASSENGERS_ON_UPDATE) && !player.getPassengers().isEmpty()) {
@@ -100,6 +104,9 @@ public class SkinApplierForge112 implements SkinApplierAccess<EntityPlayerMP> {
         SPacketPlayerListItem remove = new SPacketPlayerListItem(SPacketPlayerListItem.Action.REMOVE_PLAYER, player);
         SPacketPlayerListItem add = new SPacketPlayerListItem(SPacketPlayerListItem.Action.ADD_PLAYER, player);
         for (EntityPlayerMP other : player.server.getPlayerList().getPlayers()) {
+            if (other == player) {
+                continue;
+            }
             other.connection.sendPacket(remove);
             other.connection.sendPacket(add);
         }
