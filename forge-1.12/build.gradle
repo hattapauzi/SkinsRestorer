@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.PreserveFirstFoundResourceTransformer
+
 plugins {
     id 'java-library'
     id 'com.gtnewhorizons.retrofuturagradle' version '2.0.2'
@@ -18,12 +20,13 @@ java {
 }
 
 minecraft {
-    mcVersion = '1.12.2'
-    mcpMappingChannel = 'stable'
-    mcpMappingVersion = '39'
+    mcVersion = project.property('minecraft_version')
+    mcpMappingChannel = project.property('mapping_channel')
+    mcpMappingVersion = project.property('mapping_version')
     username = 'Dev'
     // RFG runServer/runObfServer use this launcher, not java.toolchain (which is 25 for compileJava/test).
     jvmLanguageVersion = JavaLanguageVersion.of(8)
+    // Forge version is RFG's built-in 1.12.2 default (14.23.5.2847); getForgeVersion() is not settable.
 }
 
 repositories {
@@ -36,10 +39,18 @@ repositories {
 
 configurations {
     shade
+    compileOnly.extendsFrom shade
 }
 
 def unshaded = { String projectDir, String artifact ->
-    files("../${projectDir}/build/libs/${artifact}-${project.property('mod_version')}.jar")
+    def jarFile = file("../${projectDir}/build/libs/${artifact}-${project.property('mod_version')}.jar")
+    files({
+        if (!jarFile.isFile()) {
+            throw new GradleException(
+                    "Missing parent jar ${jarFile.canonicalPath}. Run from the repo root: ./gradlew :skinsrestorer-api:jar :skinsrestorer-build-data:jar :skinsrestorer-scissors:jar :skinsrestorer-shared:jar -x test")
+        }
+        jarFile
+    })
 }
 
 dependencies {
@@ -48,61 +59,48 @@ dependencies {
             unshaded('build-data', 'skinsrestorer-build-data') +
             unshaded('scissors', 'skinsrestorer-scissors') +
             unshaded('shared', 'skinsrestorer-shared')
-    compileOnly parentJars
     shade parentJars
+    testImplementation parentJars
 
     // Same coordinates as shared/build.gradle.kts + gradle/libs.versions.toml. File deps have no transitives.
-    compileOnly libs.gson
     shade libs.gson
-    compileOnly libs.configme
     shade libs.configme
-    compileOnly libs.injector
     shade libs.injector
-    compileOnly libs.cloud.annotations
     shade libs.cloud.annotations
     annotationProcessor libs.cloud.annotations
-    compileOnly libs.cloud.processors.requirements
     shade libs.cloud.processors.requirements
-    compileOnly libs.cloud.processors.cooldown
     shade libs.cloud.processors.cooldown
-    compileOnly libs.cloud.brigadier
     shade libs.cloud.brigadier
-    compileOnly libs.cloud.translations.core
     shade libs.cloud.translations.core
-    compileOnly libs.cloud.minecraft.extras
     shade libs.cloud.minecraft.extras
-    compileOnly libs.cloud.translations.minecraft.extras
     shade libs.cloud.translations.minecraft.extras
-    compileOnly libs.reflect
     shade libs.reflect
-    compileOnly libs.mariadb.java.client
     shade libs.mariadb.java.client
-    compileOnly libs.postgresql
     shade libs.postgresql
-    compileOnly libs.hikari.cp
     shade libs.hikari.cp
-    compileOnly libs.bstats.base
     shade libs.bstats.base
     libs.bundles.adventure.shared.get().forEach {
-        compileOnly it
         shade it
     }
 
     compileOnly 'org.projectlombok:lombok:1.18.38'
     annotationProcessor 'org.projectlombok:lombok:1.18.38'
-    compileOnly 'javax.inject:javax.inject:1'
     shade 'javax.inject:javax.inject:1'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'com.mojang:authlib:1.5.25'
-    testImplementation parentJars
 }
 
 shadowJar {
     configurations = [project.configurations.shade]
     archiveClassifier.set('shaded-mcp')
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     mergeServiceFiles()
+    filesNotMatching('META-INF/services/**') {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+    transform(PreserveFirstFoundResourceTransformer)
     relocate 'com.google.gson', 'net.skinsrestorer.shadow.gson'
     relocate 'com.google.errorprone', 'net.skinsrestorer.shadow.errorprone'
     relocate 'org.bstats', 'net.skinsrestorer.shadow.bstats'
@@ -144,10 +142,13 @@ tasks.register('releaseJar', xyz.wagyourtail.jvmdg.gradle.task.ShadeJar) {
     shadePath = 'net/skinsrestorer/shadow/jvmdowngrader'
 }
 
-tasks.named('prepareObfModsFolder', Copy).configure { t ->
+tasks.named('prepareObfModsFolder', Copy).configure { Copy t ->
     t.dependsOn releaseJar
-    t.from releaseJar.archiveFile
-    t.exclude '**/*-reobf.jar'
+    t.from(tasks.named('releaseJar').flatMap { it.archiveFile })
+    def reobfJarFile = tasks.named('reobfJar').flatMap { it.archiveFile }
+    t.exclude { FileTreeElement el ->
+        !el.directory && el.file.canonicalFile == reobfJarFile.get().asFile.canonicalFile
+    }
 }
 
 tasks.named('assemble').configure {
@@ -160,7 +161,11 @@ test {
 
 processResources {
     inputs.property 'version', project.version
+    inputs.property 'modid', project.property('mod_id')
+    inputs.property 'name', project.property('mod_name')
     filesMatching('mcmod.info') {
-        expand version: project.property('mod_version')
+        expand version: project.version,
+                modid: project.property('mod_id'),
+                name: project.property('mod_name')
     }
 }
