@@ -20,14 +20,19 @@ package net.skinsrestorer.forge112;
 import ch.jalu.configme.SettingsManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityTracker;
+import net.minecraft.entity.ai.attributes.AttributeMap;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.play.server.SPacketDestroyEntities;
 import net.minecraft.network.play.server.SPacketEntityEffect;
+import net.minecraft.network.play.server.SPacketEntityProperties;
 import net.minecraft.network.play.server.SPacketHeldItemChange;
 import net.minecraft.network.play.server.SPacketPlayerListItem;
 import net.minecraft.network.play.server.SPacketPlayerPosLook;
 import net.minecraft.network.play.server.SPacketRespawn;
+import net.minecraft.network.play.server.SPacketSetExperience;
 import net.minecraft.network.play.server.SPacketSpawnPlayer;
+import net.minecraft.network.play.server.SPacketUpdateHealth;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.world.WorldServer;
 import net.skinsrestorer.api.property.SkinProperty;
@@ -37,6 +42,7 @@ import net.skinsrestorer.shared.api.event.SkinApplyEventImpl;
 import net.skinsrestorer.shared.config.ServerConfig;
 
 import javax.inject.Inject;
+import java.util.Collection;
 import java.util.Collections;
 
 public class SkinApplierForge112 implements SkinApplierAccess<EntityPlayerMP> {
@@ -127,5 +133,15 @@ public class SkinApplierForge112 implements SkinApplierAccess<EntityPlayerMP> {
             player.connection.sendPacket(new SPacketEntityEffect(player.getEntityId(), effect));
         }
         player.inventoryContainer.detectAndSendChanges();
+        player.connection.sendPacket(new SPacketUpdateHealth(
+                player.getHealth(),
+                player.getFoodStats().getFoodLevel(),
+                player.getFoodStats().getSaturationLevel()));
+        player.connection.sendPacket(new SPacketSetExperience(
+                player.experience, player.experienceTotal, player.experienceLevel));
+        Collection<IAttributeInstance> watched = ((AttributeMap) player.getAttributeMap()).getWatchedAttributes();
+        if (!watched.isEmpty()) {
+            player.connection.sendPacket(new SPacketEntityProperties(player.getEntityId(), watched));
+        }
     }
 }

@@ -18,7 +18,6 @@
 package net.skinsrestorer.forge112;
 
 import ch.jalu.injector.Injector;
-import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.ForgeVersion;
