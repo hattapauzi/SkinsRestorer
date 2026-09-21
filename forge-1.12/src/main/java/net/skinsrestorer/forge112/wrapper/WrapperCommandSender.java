@@ -50,7 +50,7 @@ public class WrapperCommandSender extends AbstractSRCommandSender {
             if (!(sender instanceof EntityPlayerMP player)) {
                 return Tristate.TRUE;
             }
-            if (player.mcServer.getPlayerList().canSendCommands(player.getGameProfile())) {
+            if (player.server.getPlayerList().canSendCommands(player.getGameProfile())) {
                 return Tristate.TRUE;
             }
             return Tristate.UNDEFINED;
