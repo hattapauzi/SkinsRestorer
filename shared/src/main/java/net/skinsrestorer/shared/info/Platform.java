@@ -26,6 +26,7 @@ public enum Platform {
     BUKKIT("Bukkit", PlatformType.SERVER),
     FABRIC("Fabric", PlatformType.SERVER),
     NEO_FORGE("NeoForge", PlatformType.SERVER),
+    FORGE("Forge", PlatformType.SERVER),
     BUNGEE_CORD("BungeeCord", PlatformType.PROXY),
     VELOCITY("Velocity", PlatformType.PROXY);
 
