@@ -69,7 +69,6 @@ public class Forge112ServerMessageListener {
         EntityPlayerMP player = ((NetHandlerPlayServer) event.getHandler()).player;
         byte[] data = Forge112PluginMessages.copyPayload(event.getPacket().payload());
         try {
-            Forge112PluginMessages.decode(data);
             adapter.handlePluginMessage(wrap(channelName, player, data));
         } catch (RuntimeException e) {
             logger.warning("Dropped malformed sr:messagechannel payload from " + player.getName(), e);

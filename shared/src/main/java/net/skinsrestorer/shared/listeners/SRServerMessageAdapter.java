@@ -47,7 +47,13 @@ public final class SRServerMessageAdapter {
         }
 
         serverAdapter.runAsync(() -> {
-            SRServerPluginMessage message = SRServerPluginMessage.CODEC.read(new SRInputReader(event.getData()));
+            SRServerPluginMessage message;
+            try {
+                message = SRServerPluginMessage.CODEC.read(new SRInputReader(event.getData()));
+            } catch (RuntimeException e) {
+                logger.warning("Dropped malformed plugin message from " + event.getPlayer().getName(), e);
+                return;
+            }
             SRServerPluginMessage.ChannelPayload<?> channelPayload = message.channelPayload();
             SRHelpers.mustSupply(() -> switch (channelPayload) {
                 case SRServerPluginMessage.GUIPageChannelPayload(SRInventory srInventory) ->

@@ -17,10 +17,20 @@
  */
 package net.skinsrestorer.forge112.gui;
 
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.skinsrestorer.shared.utils.SRHelpers;
 
 public final class SkullNbt {
+    public static NBTTagCompound applyOwner(ItemStack stack, String textureHash) {
+        NBTTagCompound tag = stack.hasTagCompound() ? stack.getTagCompound() : new NBTTagCompound();
+        tag.setTag("SkullOwner", skullOwner(
+                SkullOwnerData.fromTextureValue(SRHelpers.encodeHashToTexturesValue(textureHash))));
+        stack.setTagCompound(tag);
+        return tag;
+    }
+
     public static NBTTagCompound skullOwner(SkullOwnerData data) {
         NBTTagCompound tex = new NBTTagCompound();
         tex.setString("Value", data.textureValue());

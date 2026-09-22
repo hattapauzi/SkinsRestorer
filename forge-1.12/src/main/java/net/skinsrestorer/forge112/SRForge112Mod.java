@@ -53,7 +53,8 @@ public class SRForge112Mod {
     public void serverAboutToStart(FMLServerAboutToStartEvent event) {
         if (HybridGuard.isBukkitPresent()) {
             LogManager.getLogger(MOD_ID).error(
-                    "Bukkit detected. Use the official SkinsRestorer plugin on hybrid 1.12.2. Companion mod will not start.");
+                    "Bukkit detected. Use the official SkinsRestorer plugin on hybrid 1.12.2. "
+                            + "Companion mod will not start.");
             return;
         }
         MinecraftServer server = event.getServer();

@@ -21,6 +21,7 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 import net.skinsrestorer.forge112.wrapper.WrapperForge;
 import net.skinsrestorer.shared.subjects.SRCommandSender;
 import org.incendo.cloud.CommandManager;
@@ -28,6 +29,7 @@ import org.incendo.cloud.CommandManager;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 public class CloudForgeCommand extends CommandBase {
@@ -60,11 +62,21 @@ public class CloudForgeCommand extends CommandBase {
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
         SRCommandSender srSender = wrapper.commandSender(sender);
         commandManager.commandExecutor()
-                .executeCommand(srSender, CloudCommandLine.line(name, args));
+                .executeCommand(srSender, CloudCommandLine.line(name, args))
+                .whenComplete((result, error) -> {
+                    if (error == null) {
+                        return;
+                    }
+                    Throwable cause = error instanceof CompletionException && error.getCause() != null
+                            ? error.getCause() : error;
+                    String message = cause.getMessage() == null ? "Command failed" : cause.getMessage();
+                    server.addScheduledTask(() -> sender.sendMessage(new TextComponentString(message)));
+                });
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
+    public List<String> getTabCompletions(
+            MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
         SRCommandSender srSender = wrapper.commandSender(sender);
         try {
             return commandManager.suggestionFactory()
