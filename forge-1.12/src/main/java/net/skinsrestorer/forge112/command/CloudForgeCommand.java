@@ -28,7 +28,6 @@ import org.incendo.cloud.CommandManager;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 public class CloudForgeCommand extends CommandBase {
@@ -60,16 +59,8 @@ public class CloudForgeCommand extends CommandBase {
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
         SRCommandSender srSender = wrapper.commandSender(sender);
-        try {
-            commandManager.commandExecutor()
-                    .executeCommand(srSender, CloudCommandLine.line(name, args))
-                    .join();
-        } catch (CompletionException e) {
-            Throwable cause = e.getCause() == null ? e : e.getCause();
-            sender.sendMessage(new net.minecraft.util.text.TextComponentString(cause.getMessage() == null
-                    ? "Command failed"
-                    : cause.getMessage()));
-        }
+        commandManager.commandExecutor()
+                .executeCommand(srSender, CloudCommandLine.line(name, args));
     }
 
     @Override

@@ -183,7 +183,7 @@ public class SRForge112Adapter implements SRServerAdapter {
         display.setString("Name", Forge112ComponentHelper.toLegacy(payload.displayName()));
         tag.setTag("display", display);
         stack.setTagCompound(tag);
-        player.getAs(EntityPlayerMP.class).addItemStackToInventory(stack);
+        runSyncToPlayer(player, () -> player.getAs(EntityPlayerMP.class).addItemStackToInventory(stack));
     }
 
     @Override
