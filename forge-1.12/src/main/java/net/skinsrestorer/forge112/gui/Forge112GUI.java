@@ -30,7 +30,6 @@ import net.skinsrestorer.forge112.Forge112ComponentHelper;
 import net.skinsrestorer.shared.gui.ClickEventType;
 import net.skinsrestorer.shared.gui.GUIManager;
 import net.skinsrestorer.shared.gui.SRInventory;
-import net.skinsrestorer.shared.utils.SRHelpers;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,12 +63,7 @@ public class Forge112GUI implements GUIManager<Forge112OpenGUI> {
         ItemStack stack = new ItemStack(item);
         if (entry.materialType() == SRInventory.MaterialType.SKULL) {
             stack.setItemDamage(3);
-            entry.textureHash().ifPresent(hash -> {
-                NBTTagCompound tag = stack.hasTagCompound() ? stack.getTagCompound() : new NBTTagCompound();
-                tag.setTag("SkullOwner", SkullNbt.skullOwner(
-                        SkullOwnerData.fromTextureValue(SRHelpers.encodeHashToTexturesValue(hash))));
-                stack.setTagCompound(tag);
-            });
+            entry.textureHash().ifPresent(hash -> SkullNbt.applyOwner(stack, hash));
         }
         NBTTagCompound display = new NBTTagCompound();
         display.setString("Name", Forge112ComponentHelper.toLegacy(entry.displayName()));

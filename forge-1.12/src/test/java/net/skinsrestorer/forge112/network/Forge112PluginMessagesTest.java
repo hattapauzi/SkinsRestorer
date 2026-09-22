@@ -68,6 +68,6 @@ class Forge112PluginMessagesTest {
 
     @Test
     void malformedBytesThrowOnDecode() {
-        assertThrows(RuntimeException.class, () -> Forge112PluginMessages.decode(new byte[]{0}));
+        assertThrows(RuntimeException.class, () -> SRServerPluginMessage.CODEC.read(new SRInputReader(new byte[]{0})));
     }
 }

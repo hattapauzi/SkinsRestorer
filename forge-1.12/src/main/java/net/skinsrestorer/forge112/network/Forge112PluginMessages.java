@@ -18,18 +18,12 @@
 package net.skinsrestorer.forge112.network;
 
 import io.netty.buffer.ByteBuf;
-import net.skinsrestorer.shared.codec.SRInputReader;
-import net.skinsrestorer.shared.codec.SRServerPluginMessage;
 
 public final class Forge112PluginMessages {
     public static byte[] copyPayload(ByteBuf buf) {
         byte[] data = new byte[buf.readableBytes()];
         buf.getBytes(buf.readerIndex(), data);
         return data;
-    }
-
-    public static SRServerPluginMessage decode(byte[] data) {
-        return SRServerPluginMessage.CODEC.read(new SRInputReader(data));
     }
 
     private Forge112PluginMessages() {
