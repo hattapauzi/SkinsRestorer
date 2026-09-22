@@ -24,6 +24,8 @@ import net.minecraftforge.common.ForgeVersion;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.skinsrestorer.api.property.SkinProperty;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.skinsrestorer.forge112.command.Forge112CommandRegistrationHandler;
 import net.skinsrestorer.forge112.wrapper.WrapperForge;
 import net.skinsrestorer.shared.codec.SRServerPluginMessage;
 import net.skinsrestorer.shared.commands.SoundProvider;
@@ -50,8 +52,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class SRForge112Adapter implements SRServerAdapter {
+    private static SRForge112Adapter instance;
     private static final List<Object> REFERENCES_TO_PREVENT_GC = new ArrayList<>();
     private final Injector injector;
+    private Forge112CommandManager commandManager;
     private final ScheduledExecutorService asyncScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread thread = new Thread(r, "SkinsRestorer-Async");
         thread.setDaemon(true);
@@ -63,6 +67,11 @@ public class SRForge112Adapter implements SRServerAdapter {
     public SRForge112Adapter(Injector injector, MinecraftServer server) {
         this.injector = injector;
         this.server = server;
+        instance = this;
+    }
+
+    public static SRForge112Adapter instance() {
+        return instance;
     }
 
     public MinecraftServer server() {
@@ -81,7 +90,19 @@ public class SRForge112Adapter implements SRServerAdapter {
 
     @Override
     public CommandManager<SRCommandSender> createCommandManager() {
-        return new Forge112CommandManager(ExecutionCoordinator.asyncCoordinator());
+        WrapperForge wrapper = injector.getSingleton(WrapperForge.class);
+        commandManager = new Forge112CommandManager(
+                ExecutionCoordinator.asyncCoordinator(),
+                wrapper,
+                new Forge112CommandRegistrationHandler()
+        );
+        return commandManager;
+    }
+
+    public void registerForgeCommands(FMLServerStartingEvent event) {
+        if (commandManager != null) {
+            commandManager.registrationHandler().flush(event);
+        }
     }
 
     @Override

@@ -17,15 +17,41 @@
  */
 package net.skinsrestorer.forge112;
 
+import net.skinsrestorer.forge112.command.Forge112CommandRegistrationHandler;
+import net.skinsrestorer.forge112.wrapper.WrapperForge;
 import net.skinsrestorer.shared.subjects.SRCommandSender;
 import net.skinsrestorer.shared.subjects.permissions.Permission;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.execution.ExecutionCoordinator;
-import org.incendo.cloud.internal.CommandRegistrationHandler;
 
-public final class Forge112CommandManager extends CommandManager<SRCommandSender> {
-    public Forge112CommandManager(ExecutionCoordinator<SRCommandSender> coordinator) {
-        super(coordinator, CommandRegistrationHandler.nullCommandRegistrationHandler());
+public final class Forge112CommandManager extends CommandManager<SRCommandSender>
+        implements Forge112CommandRegistrationHandler.CommandManagerHolder {
+    private final WrapperForge wrapper;
+    private final Forge112CommandRegistrationHandler registrationHandler;
+
+    public Forge112CommandManager(
+            ExecutionCoordinator<SRCommandSender> coordinator,
+            WrapperForge wrapper,
+            Forge112CommandRegistrationHandler registrationHandler
+    ) {
+        super(coordinator, registrationHandler);
+        this.wrapper = wrapper;
+        this.registrationHandler = registrationHandler;
+        registrationHandler.initialize(this);
+    }
+
+    @Override
+    public org.incendo.cloud.CommandManager<SRCommandSender> commandManager() {
+        return this;
+    }
+
+    @Override
+    public WrapperForge wrapper() {
+        return wrapper;
+    }
+
+    public Forge112CommandRegistrationHandler registrationHandler() {
+        return registrationHandler;
     }
 
     @Override
