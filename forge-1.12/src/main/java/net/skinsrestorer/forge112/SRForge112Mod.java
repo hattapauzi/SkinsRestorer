@@ -21,6 +21,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.skinsrestorer.shared.plugin.SRBootstrapper;
 import net.skinsrestorer.shared.plugin.SRServerPlugin;
@@ -66,6 +67,15 @@ public class SRForge112Mod {
                 configDir,
                 SRForge112Init.class
         );
+    }
+
+    @Mod.EventHandler
+    public void serverStarting(FMLServerStartingEvent event) {
+        SRForge112Adapter adapter = SRForge112Adapter.instance();
+        if (adapter == null) {
+            return;
+        }
+        adapter.registerForgeCommands(event);
     }
 
     @Mod.EventHandler

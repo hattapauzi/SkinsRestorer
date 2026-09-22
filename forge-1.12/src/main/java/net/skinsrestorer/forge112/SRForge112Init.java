@@ -43,7 +43,7 @@ public class SRForge112Init implements SRServerPlatformInit {
     public void initSkinApplier() {
         plugin.registerSkinApplier(injector.getSingleton(SkinApplierForge112.class), EntityPlayerMP.class, wrapper);
         injector.getSingleton(SRLogger.class).warning(
-                "Forge 1.12.2 companion: commands, GUI, and plugin messages are not registered yet.");
+                "Forge 1.12.2 companion: GUI and plugin messages are not registered yet.");
     }
 
     @Override
