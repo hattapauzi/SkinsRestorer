@@ -20,6 +20,7 @@ package net.skinsrestorer.forge112.wrapper;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.skinsrestorer.forge112.network.Forge112ServerMessageListener;
 import net.skinsrestorer.shared.subjects.SRPlayer;
 import net.skinsrestorer.shared.subjects.SRServerPlayer;
 
@@ -59,6 +60,6 @@ public class WrapperPlayer extends WrapperCommandSender implements SRServerPlaye
 
     @Override
     public void sendToMessageChannel(byte[] data) {
-        // Plugin messages: later plan. No-op keeps bootstrap compiling.
+        Forge112ServerMessageListener.send(player, data);
     }
 }
