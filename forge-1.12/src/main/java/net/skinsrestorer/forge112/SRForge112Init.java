@@ -20,8 +20,8 @@ package net.skinsrestorer.forge112;
 import ch.jalu.injector.Injector;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.common.MinecraftForge;
+import net.skinsrestorer.forge112.network.Forge112ServerMessageListener;
 import net.skinsrestorer.forge112.wrapper.WrapperForge;
-import net.skinsrestorer.shared.log.SRLogger;
 import net.skinsrestorer.shared.plugin.SRPlugin;
 import net.skinsrestorer.shared.plugin.SRServerPlatformInit;
 
@@ -42,8 +42,6 @@ public class SRForge112Init implements SRServerPlatformInit {
     @Override
     public void initSkinApplier() {
         plugin.registerSkinApplier(injector.getSingleton(SkinApplierForge112.class), EntityPlayerMP.class, wrapper);
-        injector.getSingleton(SRLogger.class).warning(
-                "Forge 1.12.2 companion: GUI and plugin messages are not registered yet.");
     }
 
     @Override
@@ -65,5 +63,6 @@ public class SRForge112Init implements SRServerPlatformInit {
 
     @Override
     public void initMessageChannel() {
+        injector.getSingleton(Forge112ServerMessageListener.class).register();
     }
 }
