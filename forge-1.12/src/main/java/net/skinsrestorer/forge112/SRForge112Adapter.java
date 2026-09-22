@@ -159,6 +159,7 @@ public class SRForge112Adapter implements SRServerAdapter {
                     mp,
                     injector.getSingleton(ActionDataCallback.class),
                     injector.getSingleton(WrapperForge.class),
+                    this,
                     gui.handlers()
             );
             mp.openContainer.windowId = mp.currentWindowId;
