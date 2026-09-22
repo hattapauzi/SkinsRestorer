@@ -79,10 +79,12 @@ public class Forge112GUI implements GUIManager<Forge112OpenGUI> {
         NBTTagCompound tag = stack.hasTagCompound() ? stack.getTagCompound() : new NBTTagCompound();
         tag.setTag("display", display);
         if (entry.enchantmentGlow()) {
-            stack.addEnchantment(Enchantment.getEnchantmentByLocation("lure"), 1);
             tag.setInteger("HideFlags", tag.getInteger("HideFlags") | 1);
         }
         stack.setTagCompound(tag);
+        if (entry.enchantmentGlow()) {
+            stack.addEnchantment(Enchantment.getEnchantmentByLocation("lure"), 1);
+        }
         return stack;
     }
 }

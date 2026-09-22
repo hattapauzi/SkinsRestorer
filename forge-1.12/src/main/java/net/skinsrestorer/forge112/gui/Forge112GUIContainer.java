@@ -24,10 +24,12 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.ItemStack;
+import net.skinsrestorer.forge112.SRForge112Adapter;
 import net.skinsrestorer.forge112.wrapper.WrapperForge;
 import net.skinsrestorer.shared.gui.ActionDataCallback;
 import net.skinsrestorer.shared.gui.ClickEventType;
 import net.skinsrestorer.shared.gui.SRInventory;
+import net.skinsrestorer.shared.subjects.SRServerPlayer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +38,7 @@ public class Forge112GUIContainer extends ContainerChest {
     private final int chestSize;
     private final ActionDataCallback dataCallback;
     private final WrapperForge wrapper;
+    private final SRForge112Adapter adapter;
     private final Map<Integer, Map<ClickEventType, SRInventory.ClickEventAction>> handlers = new HashMap<>();
 
     public Forge112GUIContainer(
@@ -44,12 +47,14 @@ public class Forge112GUIContainer extends ContainerChest {
             EntityPlayer player,
             ActionDataCallback dataCallback,
             WrapperForge wrapper,
+            SRForge112Adapter adapter,
             Map<Integer, Map<ClickEventType, SRInventory.ClickEventAction>> handlers
     ) {
         super(playerInv, chest, player);
         this.chestSize = chest.getSizeInventory();
         this.dataCallback = dataCallback;
         this.wrapper = wrapper;
+        this.adapter = adapter;
         this.handlers.putAll(handlers);
     }
 
@@ -61,7 +66,17 @@ public class Forge112GUIContainer extends ContainerChest {
                 ClickEventType type = clickType(clickTypeIn, dragType);
                 SRInventory.ClickEventAction action = slotHandlers.get(type);
                 if (action != null) {
-                    dataCallback.handle(wrapper.player(mp), action);
+                    SRServerPlayer srPlayer = wrapper.player(mp);
+                    boolean shouldClose = action.closeInventory();
+                    dataCallback.handle(
+                            srPlayer,
+                            shouldClose
+                                    ? new SRInventory.ClickEventAction(action.actionChannelPayload(), false)
+                                    : action
+                    );
+                    if (shouldClose) {
+                        adapter.runAsync(() -> adapter.runSyncToPlayer(srPlayer, mp::closeScreen));
+                    }
                 }
             }
         }
