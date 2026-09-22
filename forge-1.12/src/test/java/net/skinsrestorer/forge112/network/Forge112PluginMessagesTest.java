@@ -25,9 +25,9 @@ import net.skinsrestorer.shared.codec.SRServerPluginMessage;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class Forge112PluginMessagesTest {
     @Test
@@ -57,8 +57,17 @@ class Forge112PluginMessagesTest {
 
     @Test
     void malformedBytesDoNotThrowFromCopy() {
-        ByteBuf buf = Unpooled.wrappedBuffer(new byte[]{0});
-        assertDoesNotThrow(() -> Forge112PluginMessages.copyPayload(buf));
+        byte[] malformed = new byte[]{0};
+        ByteBuf buf = Unpooled.wrappedBuffer(malformed);
+        byte[] copy = Forge112PluginMessages.copyPayload(buf);
+        assertArrayEquals(malformed, copy);
+        buf.setByte(0, 9);
+        assertEquals(0, copy[0]);
         buf.release();
+    }
+
+    @Test
+    void malformedBytesThrowOnDecode() {
+        assertThrows(RuntimeException.class, () -> Forge112PluginMessages.decode(new byte[]{0}));
     }
 }
