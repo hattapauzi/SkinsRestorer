@@ -19,15 +19,27 @@ package net.skinsrestorer.forge112;
 
 import ch.jalu.injector.Injector;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.common.ForgeVersion;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.skinsrestorer.api.property.SkinProperty;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.skinsrestorer.forge112.command.Forge112CommandRegistrationHandler;
+import net.skinsrestorer.forge112.gui.Forge112GUI;
+import net.skinsrestorer.forge112.gui.Forge112GUIContainer;
+import net.skinsrestorer.forge112.gui.Forge112OpenGUI;
+import net.skinsrestorer.forge112.gui.SkullNbt;
+import net.skinsrestorer.forge112.gui.SkullOwnerData;
 import net.skinsrestorer.forge112.wrapper.WrapperForge;
+import net.skinsrestorer.forge112.Forge112ComponentHelper;
 import net.skinsrestorer.shared.codec.SRServerPluginMessage;
+import net.skinsrestorer.shared.gui.ActionDataCallback;
+import net.skinsrestorer.shared.utils.SRHelpers;
 import net.skinsrestorer.shared.commands.SoundProvider;
 import net.skinsrestorer.shared.gui.SRInventory;
 import net.skinsrestorer.shared.info.Platform;
@@ -137,12 +149,40 @@ public class SRForge112Adapter implements SRServerAdapter {
 
     @Override
     public void openGUI(SRPlayer player, SRInventory srInventory) {
-        // later plan
+        Forge112OpenGUI gui = injector.getSingleton(Forge112GUI.class).createGUI(srInventory);
+        runSyncToPlayer(player, () -> {
+            EntityPlayerMP mp = player.getAs(EntityPlayerMP.class);
+            mp.getNextWindowId();
+            mp.openContainer = new Forge112GUIContainer(
+                    mp.inventory,
+                    gui.inventory(),
+                    mp,
+                    injector.getSingleton(ActionDataCallback.class),
+                    injector.getSingleton(WrapperForge.class),
+                    gui.handlers()
+            );
+            mp.openContainer.windowId = mp.currentWindowId;
+            mp.connection.sendPacket(new net.minecraft.network.play.server.SPacketOpenWindow(
+                    mp.currentWindowId,
+                    "minecraft:container",
+                    new TextComponentString(gui.inventory().getName()),
+                    gui.inventory().getSizeInventory()
+            ));
+            mp.openContainer.addListener(mp);
+        });
     }
 
     @Override
-    public void giveSkullItem(SRPlayer player, SRServerPluginMessage.GiveSkullChannelPayload giveSkullPayload) {
-        // later plan
+    public void giveSkullItem(SRPlayer player, SRServerPluginMessage.GiveSkullChannelPayload payload) {
+        ItemStack stack = new ItemStack(Items.SKULL, 1, 3);
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setTag("SkullOwner", SkullNbt.skullOwner(
+                SkullOwnerData.fromTextureValue(SRHelpers.encodeHashToTexturesValue(payload.textureHash()))));
+        NBTTagCompound display = new NBTTagCompound();
+        display.setString("Name", Forge112ComponentHelper.toLegacy(payload.displayName()));
+        tag.setTag("display", display);
+        stack.setTagCompound(tag);
+        player.getAs(EntityPlayerMP.class).addItemStackToInventory(stack);
     }
 
     @Override
